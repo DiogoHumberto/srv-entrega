@@ -10,15 +10,18 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static com.study.java.srventrega.utils.ConstantsUltils.RAABIT_EX_PAGAMENTO;
-import static com.study.java.srventrega.utils.ConstantsUltils.RAABIT_FILA_PAGAMENTO_ENTREGA;
+import static com.study.java.srventrega.utils.ConstantsUltils.*;
 
 @Configuration
 public class EntregaAMQPConfig {
 
     @Bean
     public Queue filaEntrega() {
-        return QueueBuilder.nonDurable(RAABIT_FILA_PAGAMENTO_ENTREGA).build();
+
+        return QueueBuilder
+                .nonDurable(RAABIT_FILA_PAGAMENTO_ENTREGA)
+                .deadLetterExchange(RAABIT_EX_DLX)
+                .build();
     }
 
     @Bean
@@ -29,10 +32,31 @@ public class EntregaAMQPConfig {
     }
 
     @Bean
-    public Binding bindPagamentoPedido() {
+    public Binding bindPagamentoEntrega() {
         return BindingBuilder
                 .bind(filaEntrega())
                 .to(fanoutExchange());
+    }
+
+    @Bean
+    public FanoutExchange deadLetterExchange() {
+        return ExchangeBuilder
+                .fanoutExchange(RAABIT_EX_DLX)
+                .build();
+    }
+
+    @Bean
+    public Queue filaDlqEntrega() {
+
+        return QueueBuilder.nonDurable(RAABIT_FILA_PAGAMENTO_ENTREGA_DLQ).build();
+    }
+
+    //bing para fila deadLetter
+    @Bean
+    public Binding bindDlqPagamentoEntrega() {
+        return BindingBuilder
+                .bind(filaDlqEntrega())
+                .to(deadLetterExchange());
     }
 
     @Bean
@@ -46,16 +70,16 @@ public class EntregaAMQPConfig {
     }
 
     @Bean
-    public Jackson2JsonMessageConverter messageConverter(){
-        return  new Jackson2JsonMessageConverter();
+    public Jackson2JsonMessageConverter messageConverter() {
+        return new Jackson2JsonMessageConverter();
     }
 
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory,
-                                         Jackson2JsonMessageConverter messageConverter){
+                                         Jackson2JsonMessageConverter messageConverter) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
         rabbitTemplate.setMessageConverter(messageConverter);
-        return  rabbitTemplate;
+        return rabbitTemplate;
     }
 
 }
