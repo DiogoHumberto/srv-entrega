@@ -1,9 +1,6 @@
 package com.study.java.srventrega.amqp;
 
-import org.springframework.amqp.core.ExchangeBuilder;
-import org.springframework.amqp.core.FanoutExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -29,6 +26,13 @@ public class EntregaAMQPConfig {
         return ExchangeBuilder
                 .fanoutExchange(RAABIT_EX_PAGAMENTO)
                 .build();
+    }
+
+    @Bean
+    public Binding bindPagamentoPedido() {
+        return BindingBuilder
+                .bind(filaEntrega())
+                .to(fanoutExchange());
     }
 
     @Bean

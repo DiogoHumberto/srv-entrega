@@ -13,7 +13,7 @@ public class PagamentoListener {
 
     @RabbitListener(queues = RAABIT_FILA_PAGAMENTO_ENTREGA)
     public void recebeMessage(PagamentoDto pgto){
-        log.info("<<--->>Pedido Rabbit {}", pgto);
+        log.info("<<--->> Entrega pedido Rabbit {}", pgto);
     }
 
 }
